@@ -1,6 +1,8 @@
 # 📋 MyToDoList — 多人即時協作待辦清單（純原生 JavaScript 版）
 
-基於 **純原生 JavaScript (Vanilla ES6+ Modules) + HTML5 + CSS3 + Firebase (Authentication & Cloud Firestore)** 打造的現代化多人即時協作待辦清單網頁應用程式。無需任何前端框架或複雜打包工具即可直接於瀏覽器執行，支援 Google 帳號一鍵登入、多清單管理、6 碼邀請碼快速加入、Email 協作邀請以及即時任務狀態同步。
+基於 **純原生 JavaScript (Vanilla ES6+ Modules) + HTML5 + CSS3 + Firebase (Authentication & Cloud Firestore)** 打造的現代化多人即時協作待辦清單網頁應用程式。無需任何前端框架或複雜打包工具即可直接於瀏覽器執行，並透過 **GitHub Pages** 提供線上服務。
+
+- **🌐 線上正式網址（GitHub Pages）**：https://gohubert.github.io/MyToDoList/
 
 ---
 
@@ -29,6 +31,7 @@
 | **身分驗證** | Firebase Authentication (Google Sign-In) |
 | **即時資料庫** | Cloud Firestore (Modular Web SDK v11 CDN) |
 | **安全控管** | Firestore Security Rules (`firestore.rules`) |
+| **網站部署** | GitHub Pages |
 
 ---
 
@@ -52,7 +55,7 @@ MyToDoList/
 ├── style.css                # 響應式介面與元件樣式表
 ├── app.js                   # 原生 JavaScript DOM 與即時協作主邏輯
 ├── firebase.js              # Firebase App / Auth / Firestore ES Module 初始化
-├── firebase.json            # Firebase CLI 設定（Firestore / Hosting / Auth）
+├── firebase.json            # Firebase CLI 設定（Firestore / Auth）
 ├── .firebaserc              # Firebase 預設專案綁定設定
 ├── firestore.rules          # Cloud Firestore 安全規則
 └── firestore.indexes.json   # Cloud Firestore 複合索引設定

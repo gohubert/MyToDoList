@@ -3,19 +3,6 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "firestore.rules",
-      "firestore.indexes.json",
-      "package.json",
-      "package-lock.json",
-      "README.md"
-    ]
-  },
   "auth": {
     "providers": {
       "googleSignIn": {
@@ -23,7 +10,6 @@
         "supportEmail": "gohubert@gmail.com",
         "authorizedRedirectUris": [
           "https://my-to-do-list-5a938.firebaseapp.com/__/auth/handler",
-          "https://my-to-do-list-5a938.web.app/__/auth/handler",
           "https://gohubert.github.io/MyToDoList/",
           "http://localhost:5173"
         ]
