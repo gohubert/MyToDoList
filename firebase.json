@@ -21,7 +21,13 @@
     "providers": {
       "googleSignIn": {
         "oAuthBrandDisplayName": "MyToDoList 協作待辦清單",
-        "supportEmail": "gohubert@gmail.com"
+        "supportEmail": "gohubert@gmail.com",
+        "authorizedRedirectUris": [
+          "https://my-to-do-list-5a938.firebaseapp.com/__/auth/handler",
+          "https://my-to-do-list-5a938.web.app/__/auth/handler",
+          "https://gohubert.github.io/MyToDoList/",
+          "http://localhost:5173"
+        ]
       }
     }
   }
