@@ -1,6 +1,6 @@
-# 📋 MyToDoList — 多人即時協作待辦清單
+# 📋 MyToDoList — 多人即時協作待辦清單（純原生 JavaScript 版）
 
-基於 **React 19 + Vite + Firebase (Authentication & Cloud Firestore)** 打造的現代化多人即時協作待辦清單網頁應用程式。支援 Google 帳號一鍵登入、多清單管理、6 碼邀請碼快速加入、Email 協作邀請以及即時任務狀態同步。
+基於 **純原生 JavaScript (Vanilla ES6+ Modules) + HTML5 + CSS3 + Firebase (Authentication & Cloud Firestore)** 打造的現代化多人即時協作待辦清單網頁應用程式。無需任何前端框架或複雜打包工具即可直接於瀏覽器執行，支援 Google 帳號一鍵登入、多清單管理、6 碼邀請碼快速加入、Email 協作邀請以及即時任務狀態同步。
 
 ---
 
@@ -25,53 +25,22 @@
 
 | 類別 | 技術 / 服務 |
 | :--- | :--- |
-| **前端框架** | React 19 + Vite 6 |
-| **圖示庫** | Lucide React (`lucide-react`) |
+| **前端實作** | 原生 HTML5 + CSS3 + Vanilla JavaScript (ES6+ Modules) |
 | **身分驗證** | Firebase Authentication (Google Sign-In) |
-| **即時資料庫** | Cloud Firestore (Modular Web SDK v11) |
+| **即時資料庫** | Cloud Firestore (Modular Web SDK v11 CDN) |
 | **安全控管** | Firestore Security Rules (`firestore.rules`) |
 
 ---
 
 ## 🚀 本地開發與執行
 
-### 1. 安裝相依套件
+由於採用純原生 ES Modules，只需透過任意靜態伺服器啟動即可：
 
 ```bash
-npm install
-```
-
-### 2. 啟動本地開發伺服器
-
-```bash
-npm run dev
+python3 -m http.server 5173
 ```
 
 啟動後於瀏覽器開啟 `http://localhost:5173/` 即可使用。
-
-### 3. 建置正式版套件
-
-```bash
-npm run build
-```
-
----
-
-## 🔥 Firebase 部署指令
-
-若需更新 Firestore 安全規則、索引或驗證設定，可執行：
-
-```bash
-# 部署 Firestore 安全規則與索引
-npx -y firebase-tools@latest deploy --only firestore
-
-# 部署 Firebase Authentication 設定
-npx -y firebase-tools@latest deploy --only auth
-
-# 部署前端靜態網站至 Firebase Hosting
-npm run build
-npx -y firebase-tools@latest deploy --only hosting
-```
 
 ---
 
@@ -79,16 +48,12 @@ npx -y firebase-tools@latest deploy --only hosting
 
 ```text
 MyToDoList/
-├── index.html               # 應用程式入口 HTML
-├── package.json             # 專案設定與相依套件
-├── vite.config.js           # Vite 開發與建置設定
+├── index.html               # 應用程式主頁面 HTML5 結構
+├── style.css                # 響應式介面與元件樣式表
+├── app.js                   # 原生 JavaScript DOM 與即時協作主邏輯
+├── firebase.js              # Firebase App / Auth / Firestore ES Module 初始化
 ├── firebase.json            # Firebase CLI 設定（Firestore / Hosting / Auth）
 ├── .firebaserc              # Firebase 預設專案綁定設定
 ├── firestore.rules          # Cloud Firestore 安全規則
-├── firestore.indexes.json   # Cloud Firestore 複合索引設定
-└── src/
-    ├── main.jsx             # React 應用掛載點
-    ├── App.jsx              # 主應用元件（Google 登入、多人清單、即時任務）
-    ├── index.css            # 全域樣式與響應式排版設計
-    └── firebase.js          # Firebase App / Auth / Firestore 初始化設定
+└── firestore.indexes.json   # Cloud Firestore 複合索引設定
 ```

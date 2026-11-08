@@ -2,20 +2,8 @@
   "name": "my-to-do-list",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "description": "基於原生 JavaScript (ES Modules) 與 Firebase 的多人即時協作待辦清單",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "firebase": "^11.4.0",
-    "lucide-react": "^0.475.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.2.0"
+    "start": "python3 -m http.server 5173"
   }
 }

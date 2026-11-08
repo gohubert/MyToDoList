@@ -3,13 +3,379 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MyToDoList — 多人即時協作待辦清單</title>
+    <title>MyToDoList — 多人即時協作待辦清單 (原生 JavaScript)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="auth-screen">
+      <div style="text-align: center; color: var(--text-secondary);">
+        載入 MyToDoList 中...
+      </div>
+    </div>
+
+    <!-- Unauthenticated Screen -->
+    <div id="auth-screen" class="auth-screen hidden">
+      <div class="auth-card">
+        <div class="auth-logo">☑️</div>
+        <h1 class="auth-title">MyToDoList</h1>
+        <p class="auth-subtitle">基於原生 JavaScript 與 Firebase 的多人即時協作待辦清單</p>
+
+        <div id="auth-toast" class="alert-banner hidden" style="margin-bottom: 20px; text-align: left;"></div>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <span>✨</span>
+            <span>Google 帳號一鍵安全登入</span>
+          </div>
+          <div class="feature-item">
+            <span>🤝</span>
+            <span>透過 Email、6 碼邀請碼或公開清單多人即時協作</span>
+          </div>
+          <div class="feature-item">
+            <span>⚡</span>
+            <span>支援任務指派、優先順序、到期日與即時同步狀態</span>
+          </div>
+        </div>
+
+        <button id="google-login-btn" class="google-btn">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+          </svg>
+          <span id="google-login-text">使用 Google 帳號登入</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Application Screen -->
+    <div id="app-screen" class="app-layout hidden">
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <div class="brand-header">
+          <div class="brand-title">
+            <div class="brand-icon">☑️</div>
+            <span>MyToDoList</span>
+          </div>
+          <span class="badge badge-public">即時同步</span>
+        </div>
+
+        <!-- User Profile Bar -->
+        <div class="user-profile-bar">
+          <div class="user-info">
+            <div id="user-avatar-container"></div>
+            <div class="user-meta">
+              <div id="user-name" class="user-name"></div>
+              <div id="user-email" class="user-email"></div>
+            </div>
+          </div>
+          <button id="logout-btn" class="btn-icon" title="登出 Google 帳號">🚪</button>
+        </div>
+
+        <!-- Collaborative Lists Nav -->
+        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+          <div class="section-label">
+            <span id="lists-count-label">協作待辦清單 (0)</span>
+            <button id="open-new-list-icon-btn" class="btn-icon" title="新增協作清單" style="color: var(--primary); font-weight: 700;">＋</button>
+          </div>
+          <div id="lists-nav" class="lists-nav"></div>
+        </div>
+
+        <!-- Join via Invite Code -->
+        <div class="join-code-box">
+          <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">
+            # 輸入邀請碼加入清單
+          </div>
+          <form id="join-code-form" class="join-code-form">
+            <input
+              id="join-code-input"
+              type="text"
+              class="input-sm"
+              placeholder="例如：A7K9X2"
+              maxlength="10"
+              style="flex: 1; background: #fff; text-transform: uppercase;"
+            />
+            <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.82rem;">
+              加入
+            </button>
+          </form>
+        </div>
+
+        <button id="open-new-list-btn" class="btn btn-primary" style="width: 100%;">
+          ＋ 建立新協作清單
+        </button>
+      </aside>
+
+      <!-- Main Workspace -->
+      <main class="main-content">
+        <div id="main-toast" class="alert-banner hidden"></div>
+
+        <!-- Empty Workspace State (No Active List) -->
+        <div id="no-list-state" class="empty-state hidden" style="margin-top: 40px;">
+          <div style="font-size: 2.2rem;">🤝</div>
+          <h2 style="font-size: 1.25rem; color: var(--text-primary);">開始您的第一個多人協作待辦清單</h2>
+          <p style="max-width: 420px; font-size: 0.92rem;">
+            建立清單後，您可以透過 Email 邀請團隊夥伴，或分享 6 碼邀請碼讓其他人即時加入同步協作。
+          </p>
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button id="create-starter-list-btn" class="btn btn-primary">✨ 一鍵建立範例協作清單</button>
+            <button id="empty-new-list-btn" class="btn btn-secondary">＋ 自訂新清單</button>
+          </div>
+        </div>
+
+        <!-- Active List Workspace -->
+        <div id="active-list-workspace" class="hidden" style="display: flex; flex-direction: column; gap: 24px;">
+          <!-- Header Card -->
+          <section class="list-header-card">
+            <div class="list-header-top">
+              <div class="list-title-group">
+                <div id="active-list-icon" class="list-icon-badge">📋</div>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <h1 id="active-list-title" style="font-size: 1.45rem; font-weight: 700;"></h1>
+                    <span id="active-list-access-badge" class="badge"></span>
+                    <span
+                      id="active-list-code-badge"
+                      class="badge"
+                      style="background: #eef2ff; color: #4f46e5; cursor: pointer;"
+                      title="點擊複製邀請碼"
+                    ></span>
+                  </div>
+                  <p id="active-list-desc" style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;"></p>
+                </div>
+              </div>
+
+              <div class="list-header-actions">
+                <button id="open-share-modal-btn" class="btn btn-primary">
+                  👤 邀請協作 (<span id="collaborator-count">1</span>)
+                </button>
+                <button id="delete-list-btn" class="btn btn-danger hidden" title="刪除此清單">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <!-- Collaborator Bar -->
+            <div class="collaborator-bar">
+              <div id="collaborator-avatars" class="avatar-stack"></div>
+              <button
+                id="clear-completed-btn"
+                class="btn btn-secondary hidden"
+                style="padding: 5px 10px; font-size: 0.78rem;"
+              ></button>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="progress-section">
+              <div class="progress-meta">
+                <span>整體完成進度</span>
+                <span id="progress-text">已完成 0 / 0 項 (0%)</span>
+              </div>
+              <div class="progress-track">
+                <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Task Composer -->
+          <form id="task-composer-form" class="task-composer">
+            <div class="composer-main-row">
+              <input
+                id="task-title-input"
+                type="text"
+                class="composer-input"
+                placeholder="新增待辦事項...（按 Enter 立即同步給所有協作成員）"
+                required
+              />
+              <button id="toggle-notes-btn" type="button" class="btn btn-secondary">
+                更多選項
+              </button>
+              <button type="submit" class="btn btn-primary">＋ 新增</button>
+            </div>
+
+            <div class="composer-options-row">
+              <select id="task-priority-select" class="select-sm">
+                <option value="high">🔥 高優先</option>
+                <option value="medium" selected>⚡ 中優先</option>
+                <option value="low">🌱 低優先</option>
+              </select>
+
+              <select id="task-category-select" class="select-sm">
+                <option value="工作">🏷️ 工作</option>
+                <option value="開發">🏷️ 開發</option>
+                <option value="設計">🏷️ 設計</option>
+                <option value="採購">🏷️ 採購</option>
+                <option value="生活">🏷️ 生活</option>
+                <option value="其他">🏷️ 其他</option>
+              </select>
+
+              <select id="task-assignee-select" class="select-sm">
+                <option value="">👤 指派給：不指定</option>
+              </select>
+
+              <input id="task-duedate-input" type="date" class="input-sm" title="到期日" />
+            </div>
+
+            <textarea
+              id="task-notes-input"
+              class="composer-input hidden"
+              rows="2"
+              placeholder="補充說明或備註（選填）..."
+            ></textarea>
+          </form>
+
+          <!-- Filters Bar -->
+          <div class="filters-bar">
+            <div id="status-filter-tabs" class="filter-tabs">
+              <button type="button" class="filter-tab active" data-filter="all">全部 (0)</button>
+              <button type="button" class="filter-tab" data-filter="active">進行中 (0)</button>
+              <button type="button" class="filter-tab" data-filter="completed">已完成 (0)</button>
+              <button type="button" class="filter-tab" data-filter="mine">指派給我</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <select id="priority-filter-select" class="select-sm">
+                <option value="all">所有優先順序</option>
+                <option value="high">高優先</option>
+                <option value="medium">中優先</option>
+                <option value="low">低優先</option>
+              </select>
+
+              <input
+                id="search-input"
+                type="text"
+                class="input-sm"
+                style="background: #fff;"
+                placeholder="🔍 搜尋待辦事項..."
+              />
+            </div>
+          </div>
+
+          <!-- Tasks Container -->
+          <div id="tasks-container" class="tasks-container"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal: Create New Collaborative List -->
+    <div id="new-list-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">建立新協作待辦清單</h3>
+          <button id="close-new-list-modal-btn" type="button" class="btn-icon">✕</button>
+        </div>
+
+        <form id="new-list-form" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">清單名稱</label>
+            <input
+              id="new-list-title"
+              type="text"
+              class="composer-input"
+              placeholder="例如：產品上線準備、家庭採購清單..."
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">清單說明（選填）</label>
+            <input
+              id="new-list-desc"
+              type="text"
+              class="composer-input"
+              placeholder="簡短描述這個待辦清單的目標..."
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">選擇圖示</label>
+            <div id="icon-picker" class="picker-row"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">代表色彩</label>
+            <div id="color-picker" class="picker-row"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">協作權限模式</label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-subtle); border-radius: var(--radius-sm); cursor: pointer;">
+              <input id="new-list-public" type="checkbox" checked />
+              <div>
+                <div style="font-weight: 600; font-size: 0.88rem;">公開協作清單（推薦用於快速多人測試）</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary);">
+                  開啟後所有登入本系統的成員皆可直接查看並協作；關閉則僅限受邀 Email 或輸入邀請碼加入。
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+            <button id="cancel-new-list-btn" type="button" class="btn btn-secondary">取消</button>
+            <button type="submit" class="btn btn-primary">建立清單</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Share & Manage Collaborators -->
+    <div id="share-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">多人協作與分享設定</h3>
+          <button id="close-share-modal-btn" type="button" class="btn-icon">✕</button>
+        </div>
+
+        <div style="background: var(--primary-light); padding: 16px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">專屬 6 碼邀請碼</div>
+            <div id="share-invite-code" style="font-size: 1.4rem; font-weight: 800; letter-spacing: 0.08em; color: var(--primary);"></div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="copy-code-btn" type="button" class="btn btn-secondary">📋 複製邀請碼</button>
+            <button id="copy-link-btn" type="button" class="btn btn-primary">🔗 複製邀請連結</button>
+          </div>
+        </div>
+
+        <form id="invite-email-form" class="form-group">
+          <label class="form-label">透過 Google Email 邀請協作夥伴</label>
+          <div style="display: flex; gap: 8px;">
+            <input
+              id="invite-email-input"
+              type="email"
+              class="composer-input"
+              placeholder="輸入夥伴的 Gmail / Google 帳號信箱..."
+              required
+            />
+            <button type="submit" class="btn btn-primary">＋ 新增</button>
+          </div>
+        </form>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg-subtle); border-radius: var(--radius-sm);">
+          <div>
+            <div id="share-access-mode-title" style="font-weight: 600; font-size: 0.9rem;"></div>
+            <div id="share-access-mode-desc" style="font-size: 0.78rem; color: var(--text-secondary);"></div>
+          </div>
+          <button id="toggle-public-btn" type="button" class="btn btn-secondary"></button>
+        </div>
+
+        <div class="form-group">
+          <label id="share-members-label" class="form-label">目前已加入的協作成員</label>
+          <div id="share-members-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <div id="share-invited-emails-section" class="form-group hidden">
+          <label class="form-label">受邀信箱名單</label>
+          <div id="share-invited-emails-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
